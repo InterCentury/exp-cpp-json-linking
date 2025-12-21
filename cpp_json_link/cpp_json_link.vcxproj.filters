@@ -18,6 +18,9 @@
     <ClCompile Include="cpp_json_link.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="2nd_test_item.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="third_party\nlohmann\json.hpp">

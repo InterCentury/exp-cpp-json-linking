@@ -124,6 +124,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="cpp_json_link.cpp" />
+    <ClCompile Include="2nd_test_item.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="third_party\nlohmann\json.hpp" />
