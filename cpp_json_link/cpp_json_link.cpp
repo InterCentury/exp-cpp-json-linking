@@ -1,126 +1,50 @@
 #include <iostream>
-#include <unordered_map>
+#include <sstream>
+#include <fstream>
 #include <string>
 
-// nlohmann::json single-header library
-// This file should be placed inside your project, e.g.
-// third_party/nlohmann/json.hpp
+// pretend JSON lib
 #include "third_party/nlohmann/json.hpp"
-
 using json = nlohmann::json;
+using namespace std;
 
-/* ============================================================
-   COLOR & STYLE HANDLING
-   ------------------------------------------------------------
-   This section maps human-readable color/style names
-   (from JSON config) to ANSI escape codes used by terminals.
-   ============================================================ */
+// ---------------- Dummy OS class ----------------
+class CompactOS {
+public:
+    string getOSName() { return "Windows"; }
+    string getOSBuild() { return " 10.0.22631"; }
+    string getArchitecture() { return "x64"; }
+    string getUptime() { return "2h 31m"; }
+};
 
-   /**
-    * Converts a color name (string) into an ANSI color escape code.
-    * If an unknown color is provided, it safely falls back to "reset".
-    *
-    * Example:
-    *   getColorCode("red") -> "\033[31m"
-    */
-std::string getColorCode(const std::string& color) {
-
-    // Static map so it is created only once
-    static std::unordered_map<std::string, std::string> colors = {
-
-        // Standard colors
-        {"black",   "\033[30m"},
-        {"red",     "\033[31m"},
-        {"green",   "\033[32m"},
-        {"yellow",  "\033[33m"},
-        {"blue",    "\033[34m"},
-        {"magenta", "\033[35m"},
-        {"cyan",    "\033[36m"},
-        {"white",   "\033[37m"},
-
-        // Bright variants
-        {"gray",           "\033[90m"},
-        {"grey",           "\033[90m"},
-        {"bright_red",     "\033[91m"},
-        {"bright_green",   "\033[92m"},
-        {"bright_yellow",  "\033[93m"},
-        {"bright_blue",    "\033[94m"},
-        {"bright_magenta", "\033[95m"},
-        {"bright_cyan",    "\033[96m"},
-        {"bright_white",   "\033[97m"},
-
-        // Reset code (important to avoid color bleeding)
-        {"reset", "\033[0m"}
-    };
-
-    // Look up the color name
-    std::unordered_map<std::string, std::string>::iterator it = colors.find(color);
-
-    // If found, return the ANSI code
-    if (it != colors.end())
-        return it->second;
-
-    // Fallback: reset color if input is invalid
-    return "\033[0m";
+// ---------------- Color helper ----------------
+string colorize(const string& text, const string& color) {
+    if (color == "red")    return "\033[31m" + text + "\033[0m";
+    if (color == "green")  return "\033[32m" + text + "\033[0m";
+    if (color == "cyan")   return "\033[36m" + text + "\033[0m";
+    if (color == "yellow") return "\033[33m" + text + "\033[0m";
+    return text; // default (no color)
 }
-
-/**
- * Converts a text style name into an ANSI escape code.
- *
- * Supported styles:
- *  - bold
- *  - dim
- *  - underline
- *  - blink
- *  - reverse
- *
- * Unknown styles return an empty string (safe no-op).
- */
-std::string getStyleCode(const std::string& style) {
-
-    if (style == "bold")       return "\033[1m";
-    if (style == "dim")        return "\033[2m";
-    if (style == "underline")  return "\033[4m";
-    if (style == "blink")      return "\033[5m";
-    if (style == "reverse")    return "\033[7m";
-
-    // No style applied
-    return "";
-}
-
-/* ============================================================
-   MAIN ENTRY POINT
-   ============================================================ */
 
 int main() {
+    // -------- Load config.json --------
+    json cfg;
+    ifstream f("config.json");
+    cfg = json::parse(f);
 
-    // --------------------------------------------------------
-    // Configuration object
-    // In BinaryFetch, this would usually be loaded from
-    // an external config.json file.
-    // --------------------------------------------------------
-    json config;
+    CompactOS c_os;
 
-    config["print_hello"] = true;          // Toggle output on/off
-    config["hello_color"] = "bright_cyan"; // Text color
-    config["hello_style"] = "bold";        // Text style
+    // -------- Minimal OS section --------
+    if (cfg["modules"]["os"]["enabled"]) {
 
-    // --------------------------------------------------------
-    // Execute behavior based on configuration
-    // --------------------------------------------------------
-    if (config["print_hello"].get<bool>()) {
+        ostringstream ss;
+        ss << "[OS]  -> " << c_os.getOSName()
+            << c_os.getOSBuild()
+            << " (" << c_os.getArchitecture() << ")"
+            << " (uptime: " << c_os.getUptime() << ")";
 
-        // Read values safely from JSON
-        std::string color = config["hello_color"].get<std::string>();
-        std::string style = config["hello_style"].get<std::string>();
-
-        // Apply style + color, print text, then reset formatting
-        std::cout
-            << getStyleCode(style)
-            << getColorCode(color)
-            << "Hello World"
-            << getColorCode("reset")   // Always reset to avoid affecting next output
-            << std::endl;
+        string color = cfg["modules"]["os"]["color"];
+        cout << colorize(ss.str(), color) << endl;
     }
 
     return 0;

@@ -1,0 +1,8 @@
+{
+  "modules": {
+    "os": {
+      "enabled": true,
+      "color": "cyan"
+    }
+  }
+}
