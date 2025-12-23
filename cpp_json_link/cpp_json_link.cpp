@@ -1,88 +1,76 @@
+// dummy_main.cpp (EXPERIMENTAL)
+
 #include <iostream>
-#include <fstream>
 #include <sstream>
 #include <string>
 
-// pretend JSON lib
-#include "third_party/nlohmann/json.hpp"
-using json = nlohmann::json;
-
-/* ---------------- Dummy OS class ---------------- */
-struct OSInfo {
-    std::string getOSName() const { return "Windows"; }
-    std::string getOSBuild() const { return " 10 22H2"; }
-    std::string getArchitecture() const { return "x64"; }
-    std::string getUptime() const { return "3h 21m"; }
-};
-
-/* ---------------- Color helper ---------------- */
-std::string colorize(const std::string& text, const std::string& color) {
-    if (color == "red")     return "\033[31m" + text + "\033[0m";
-    if (color == "green")   return "\033[32m" + text + "\033[0m";
-    if (color == "yellow")  return "\033[33m" + text + "\033[0m";
-    if (color == "blue")    return "\033[34m" + text + "\033[0m";
-    if (color == "magenta") return "\033[35m" + text + "\033[0m";
-    if (color == "cyan")    return "\033[36m" + text + "\033[0m";
-    return text;
+// Dummy ANSI colors (temporary)
+namespace Color {
+    const std::string RESET = "\033[0m";
+    const std::string CYAN = "\033[36m";
+    const std::string YELLOW = "\033[33m";
+    const std::string GREEN = "\033[32m";
+    const std::string MAGENTA = "\033[35m";
 }
 
+// Dummy CompactOS replacement
+struct DummyOS {
+    std::string getOSName() { return "Windows"; }
+    std::string getOSBuild() { return " 10.0.22631"; }
+    std::string getArchitecture() { return "x64"; }
+    std::string getUptime() { return "2h 13m"; }
+};
+
+// Dummy LivePrinter
+struct LivePrinter {
+    void push(const std::string& s) {
+        std::cout << s << std::endl;
+    }
+};
+
 int main() {
-    // Load config
-    std::ifstream f("config.json");
-    json cfg;
-    f >> cfg;
 
-    OSInfo c_os;
+    LivePrinter lp;
+    DummyOS c_os;
 
-    const auto& os = cfg["modules"]["os"];
-    if (!os["enabled"]) return 0;
-
-    std::ostringstream ss;
-
-    // [OS] label
-    ss << colorize(
-        "[" + os["label"]["text"].get<std::string>() + "]",
-        os["label"]["color"]
-    )
-        << " -> ";
-
-    // OS name
-    if (os["fields"]["name"]["enabled"]) {
-        ss << colorize(
-            c_os.getOSName(),
-            os["fields"]["name"]["color"]
-        );
+    // Header
+    {
+        std::ostringstream ss;
+        ss << Color::MAGENTA
+            << "~>> BinaryFetch__________________________________________"
+            << Color::RESET;
+        lp.push(ss.str());
     }
 
-    // Build
-    if (os["fields"]["build"]["enabled"]) {
-        ss << colorize(
-            c_os.getOSBuild(),
-            os["fields"]["build"]["color"]
-        );
+    // Minimal OS (color per section)
+    {
+        std::ostringstream ss;
+        ss << Color::CYAN << "[OS]" << Color::RESET << "  -> "
+            << Color::GREEN
+            << c_os.getOSName()
+            << c_os.getOSBuild()
+            << " (" << c_os.getArchitecture() << ")"
+            << " (uptime: " << c_os.getUptime() << ")"
+            << Color::RESET;
+
+        lp.push(ss.str());
     }
 
-    // Architecture
-    if (os["fields"]["arch"]["enabled"]) {
-        ss << " ("
-            << colorize(
-                c_os.getArchitecture(),
-                os["fields"]["arch"]["color"]
-            )
-            << ")";
+    // Dummy CPU
+    {
+        std::ostringstream ss;
+        ss << Color::YELLOW << "[CPU]" << Color::RESET
+            << " -> Ryzen 5 5600G (6C/12T @ 3.90GHz)";
+        lp.push(ss.str());
     }
 
-    // Uptime
-    if (os["fields"]["uptime"]["enabled"]) {
-        ss << " (uptime: "
-            << colorize(
-                c_os.getUptime(),
-                os["fields"]["uptime"]["color"]
-            )
-            << ")";
+    // Dummy Display
+    {
+        std::ostringstream ss;
+        ss << Color::MAGENTA << "[Display 1]" << Color::RESET
+            << " -> LG (1920x1080) @144Hz";
+        lp.push(ss.str());
     }
 
-    // Output
-    std::cout << ss.str() << std::endl;
     return 0;
 }
