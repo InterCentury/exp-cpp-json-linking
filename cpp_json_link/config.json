@@ -2,7 +2,30 @@
   "modules": {
     "os": {
       "enabled": true,
-      "color": "cyan"
+
+      "label": {
+        "text": "OS",
+        "color": "cyan"
+      },
+
+      "fields": {
+        "name": {
+          "enabled": true,
+          "color": "green"
+        },
+        "build": {
+          "enabled": true,
+          "color": "yellow"
+        },
+        "arch": {
+          "enabled": true,
+          "color": "magenta"
+        },
+        "uptime": {
+          "enabled": true,
+          "color": "blue"
+        }
+      }
     }
   }
 }
